@@ -5,9 +5,17 @@ import "context"
 // BroadcastTransaction sends a raw transaction to the remote server to
 // be broadcasted on the server network.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-broadcast
-func (s *Client) BroadcastTransaction(ctx context.Context, rawTx string) (string, error) {
+func (s *Client) BroadcastTransaction(
+	ctx context.Context,
+	rawTx string,
+) (string, error) {
 	resp := &basicResp{}
-	err := s.request(ctx, "blockchain.transaction.broadcast", []interface{}{rawTx}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.broadcast",
+		[]interface{}{rawTx},
+		&resp,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -30,6 +38,7 @@ type GetTransactionResult struct {
 	Locktime      uint32               `json:"locktime"`
 	Size          uint32               `json:"size"`
 	Time          uint64               `json:"time"`
+	TxID          string               `json:"txid"`
 	Version       uint32               `json:"version"`
 	Vin           []Vin                `json:"vin"`
 	Vout          []Vout               `json:"vout"`
@@ -39,7 +48,7 @@ type GetTransactionResult struct {
 // Vin represents the input side of a transaction.
 type Vin struct {
 	Coinbase  string     `json:"coinbase"`
-	ScriptSig *ScriptSig `json:"scriptsig"`
+	ScriptSig *ScriptSig `json:"scriptSig"`
 	Sequence  uint32     `json:"sequence"`
 	TxID      string     `json:"txid"`
 	Vout      uint32     `json:"vout"`
@@ -54,25 +63,33 @@ type ScriptSig struct {
 // Vout represents the output side of a transaction.
 type Vout struct {
 	N            uint32       `json:"n"`
-	ScriptPubkey ScriptPubkey `json:"scriptpubkey"`
+	ScriptPubKey ScriptPubKey `json:"scriptPubKey"`
 	Value        float64      `json:"value"`
 }
 
-// ScriptPubkey represents the script of that transaction output.
-type ScriptPubkey struct {
+// ScriptPubKey represents the script of that transaction output.
+type ScriptPubKey struct {
 	Addresses []string `json:"addresses,omitempty"`
 	Asm       string   `json:"asm"`
 	Hex       string   `json:"hex,omitempty"`
-	ReqSigs   uint32   `json:"reqsigs,omitempty"`
+	ReqSigs   uint32   `json:"reqSigs,omitempty"`
 	Type      string   `json:"type"`
 }
 
 // GetTransaction gets the detailed information for a transaction.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-get
-func (s *Client) GetTransaction(ctx context.Context, txHash string) (*GetTransactionResult, error) {
+func (s *Client) GetTransaction(
+	ctx context.Context,
+	txHash string,
+) (*GetTransactionResult, error) {
 	var resp GetTransactionResp
 
-	err := s.request(ctx, "blockchain.transaction.get", []interface{}{txHash, true}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.get",
+		[]interface{}{txHash, true},
+		&resp,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +99,18 @@ func (s *Client) GetTransaction(ctx context.Context, txHash string) (*GetTransac
 
 // GetRawTransaction gets a raw encoded transaction.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-get
-func (s *Client) GetRawTransaction(ctx context.Context, txHash string) (string, error) {
+func (s *Client) GetRawTransaction(
+	ctx context.Context,
+	txHash string,
+) (string, error) {
 	var resp basicResp
 
-	err := s.request(ctx, "blockchain.transaction.get", []interface{}{txHash, false}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.get",
+		[]interface{}{txHash, false},
+		&resp,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -107,10 +132,19 @@ type GetMerkleProofResult struct {
 
 // GetMerkleProof returns the merkle proof for a confirmed transaction.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-get-merkle
-func (s *Client) GetMerkleProof(ctx context.Context, txHash string, height uint32) (*GetMerkleProofResult, error) {
+func (s *Client) GetMerkleProof(
+	ctx context.Context,
+	txHash string,
+	height uint32,
+) (*GetMerkleProofResult, error) {
 	var resp GetMerkleProofResp
 
-	err := s.request(ctx, "blockchain.transaction.get_merkle", []interface{}{txHash, height}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.get_merkle",
+		[]interface{}{txHash, height},
+		&resp,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -120,10 +154,18 @@ func (s *Client) GetMerkleProof(ctx context.Context, txHash string, height uint3
 
 // GetHashFromPosition returns the transaction hash for a specific position in a block.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-id-from-pos
-func (s *Client) GetHashFromPosition(ctx context.Context, height, position uint32) (string, error) {
+func (s *Client) GetHashFromPosition(
+	ctx context.Context,
+	height, position uint32,
+) (string, error) {
 	var resp basicResp
 
-	err := s.request(ctx, "blockchain.transaction.id_from_pos", []interface{}{height, position, false}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.id_from_pos",
+		[]interface{}{height, position, false},
+		&resp,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -145,10 +187,18 @@ type GetMerkleProofFromPosResult struct {
 
 // GetMerkleProofFromPosition returns the merkle proof for a specific position in a block.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-id-from-pos
-func (s *Client) GetMerkleProofFromPosition(ctx context.Context, height, position uint32) (*GetMerkleProofFromPosResult, error) {
+func (s *Client) GetMerkleProofFromPosition(
+	ctx context.Context,
+	height, position uint32,
+) (*GetMerkleProofFromPosResult, error) {
 	var resp GetMerkleProofFromPosResp
 
-	err := s.request(ctx, "blockchain.transaction.id_from_pos", []interface{}{height, position, true}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.transaction.id_from_pos",
+		[]interface{}{height, position, true},
+		&resp,
+	)
 	if err != nil {
 		return nil, err
 	}
