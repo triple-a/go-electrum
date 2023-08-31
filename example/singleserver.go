@@ -5,17 +5,24 @@ import (
 	"log"
 	"time"
 
-	"github.com/checksum0/go-electrum/electrum"
+	"github.com/triple-a/go-electrum/electrum"
 )
 
 func main() {
-	client, err := electrum.NewClientTCP(context.Background(), "bch.imaginary.cash:50001")
+	client, err := electrum.NewClientTCP(
+		context.Background(),
+		"bch.imaginary.cash:50001",
+	)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	serverVer, protocolVer, err := client.ServerVersion(context.Background())
+	serverVer, protocolVer, err := client.ServerVersion(
+		context.Background(),
+		"",
+		"1.4.2",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
