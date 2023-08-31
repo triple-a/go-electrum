@@ -25,7 +25,7 @@ func (s *Client) BroadcastTransaction(
 
 // GetTransactionResp represents the response to GetTransaction().
 type GetTransactionResp struct {
-	Result *GetTransactionResult `json:"result"`
+	Result GetTransactionResult `json:"result"`
 }
 
 // GetTransactionResult represents the content of the result field in the response to GetTransaction().
@@ -94,7 +94,7 @@ func (s *Client) GetTransaction(
 		return nil, err
 	}
 
-	return resp.Result, nil
+	return &resp.Result, nil
 }
 
 // GetRawTransaction gets a raw encoded transaction.
