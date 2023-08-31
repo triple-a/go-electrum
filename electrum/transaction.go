@@ -47,11 +47,11 @@ type GetTransactionResult struct {
 
 // Vin represents the input side of a transaction.
 type Vin struct {
-	Coinbase  string     `json:"coinbase"`
-	ScriptSig *ScriptSig `json:"scriptSig"`
-	Sequence  uint32     `json:"sequence"`
-	TxID      string     `json:"txid"`
-	Vout      uint32     `json:"vout"`
+	Coinbase  string    `json:"coinbase"`
+	ScriptSig ScriptSig `json:"scriptSig"`
+	Sequence  uint32    `json:"sequence"`
+	TxID      string    `json:"txid"`
+	Vout      uint32    `json:"vout"`
 }
 
 // ScriptSig represents the signature script for that transaction input.
@@ -70,6 +70,7 @@ type Vout struct {
 // ScriptPubKey represents the script of that transaction output.
 type ScriptPubKey struct {
 	Addresses []string `json:"addresses,omitempty"`
+	Address   string   `json:"address,omitempty"`
 	Asm       string   `json:"asm"`
 	Hex       string   `json:"hex,omitempty"`
 	ReqSigs   uint32   `json:"reqSigs,omitempty"`

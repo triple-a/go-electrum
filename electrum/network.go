@@ -92,7 +92,11 @@ func NewClientTCP(ctx context.Context, addr string) (*Client, error) {
 }
 
 // NewClientSSL initialize a new client for remote server and connects to the remote server using SSL
-func NewClientSSL(ctx context.Context, addr string, config *tls.Config) (*Client, error) {
+func NewClientSSL(
+	ctx context.Context,
+	addr string,
+	config *tls.Config,
+) (*Client, error) {
 	transport, err := NewSSLTransport(ctx, addr, config)
 	if err != nil {
 		return nil, err
@@ -152,7 +156,10 @@ func (s *Client) listen() {
 				if DebugMode {
 					log.Printf("Unmarshal received message failed: %v", err)
 				}
-				result.err = fmt.Errorf("Unmarshal received message failed: %v", err)
+				result.err = fmt.Errorf(
+					"Unmarshal received message failed: %v",
+					err,
+				)
 			} else if msg.Error != "" {
 				result.err = errors.New(msg.Error)
 			}
@@ -197,7 +204,12 @@ type request struct {
 	Params []interface{} `json:"params"`
 }
 
-func (s *Client) request(ctx context.Context, method string, params []interface{}, v interface{}) error {
+func (s *Client) request(
+	ctx context.Context,
+	method string,
+	params []interface{},
+	v interface{},
+) error {
 	select {
 	case <-s.quit:
 		return ErrServerShutdown
