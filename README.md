@@ -1,15 +1,18 @@
-# go-electrum [![GoDoc](https://godoc.org/github.com/checksum0/go-electrum?status.svg)](https://godoc.org/github.com/checksum0/go-electrum)
+# go-electrum [![GoDoc](https://godoc.org/github.com/triple-a/go-electrum?status.svg)](https://godoc.org/github.com/triple-a/go-electrum)
+
 A pure Go [Electrum](https://electrum.org/) bitcoin library supporting the latest [ElectrumX](https://github.com/kyuupichan/electrumx) protocol versions.  
 This makes it easy to write cryptocurrencies based services in a trustless fashion using Go without having to run a full node.
 
-![go-electrum](https://raw.githubusercontent.com/checksum0/go-electrum/master/media/logo.png)
+![go-electrum](https://raw.githubusercontent.com/triple-a/go-electrum/master/media/logo.png)
 
 ## Usage
-See [example/](https://github.com/checksum0/go-electrum/tree/master/example) for more.
 
-### electrum [![GoDoc](https://godoc.org/github.com/checksum0/go-electrum/electrum?status.svg)](https://godoc.org/github.com/checksum0/go-electrum/electrum)
+See [example/](https://github.com/triple-a/go-electrum/tree/master/example) for more.
+
+### electrum [![GoDoc](https://godoc.org/github.com/triple-a/go-electrum/electrum?status.svg)](https://godoc.org/github.com/triple-a/go-electrum/electrum)
+
 ```bash
-$ go get github.com/checksum0/go-electrum
+$ go get github.com/triple-a/go-electrum
 ```
 
 ```go
@@ -20,7 +23,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/checksum0/go-electrum/electrum"
+	"github.com/triple-a/go-electrum/electrum"
 )
 
 func main() {
@@ -59,6 +62,7 @@ func main() {
 ```
 
 # License
+
 go-electrum is licensed under the MIT license. See LICENSE file for more details.
 
 Copyright (c) 2022 Roman Maklakov  

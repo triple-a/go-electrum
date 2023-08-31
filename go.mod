@@ -1,4 +1,4 @@
-module github.com/checksum0/go-electrum
+module github.com/triple-a/go-electrum
 
 go 1.18
 
