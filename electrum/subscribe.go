@@ -19,16 +19,23 @@ type SubscribeHeadersNotif struct {
 
 // SubscribeHeadersResult represents the content of the result field in the response to SubscribeHeaders().
 type SubscribeHeadersResult struct {
-	Height int32  `json:"height,omitempty"`
+	Height int64  `json:"height,omitempty"`
 	Hex    string `json:"hex"`
 }
 
 // SubscribeHeaders subscribes to receive block headers notifications when new blocks are found.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-headers-subscribe
-func (s *Client) SubscribeHeaders(ctx context.Context) (<-chan *SubscribeHeadersResult, error) {
+func (s *Client) SubscribeHeaders(
+	ctx context.Context,
+) (<-chan *SubscribeHeadersResult, error) {
 	var resp SubscribeHeadersResp
 
-	err := s.request(ctx, "blockchain.headers.subscribe", []interface{}{}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.headers.subscribe",
+		[]interface{}{},
+		&resp,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +117,19 @@ func (s *Client) SubscribeScripthash() (*ScripthashSubscription, <-chan *Subscri
 }
 
 // Add ...
-func (sub *ScripthashSubscription) Add(ctx context.Context, scripthash string, address ...string) error {
+func (sub *ScripthashSubscription) Add(
+	ctx context.Context,
+	scripthash string,
+	address ...string,
+) error {
 	var resp basicResp
 
-	err := sub.server.request(ctx, "blockchain.scripthash.subscribe", []interface{}{scripthash}, &resp)
+	err := sub.server.request(
+		ctx,
+		"blockchain.scripthash.subscribe",
+		[]interface{}{scripthash},
+		&resp,
+	)
 	if err != nil {
 		return err
 	}
@@ -133,7 +149,9 @@ func (sub *ScripthashSubscription) Add(ctx context.Context, scripthash string, a
 }
 
 // GetAddress ...
-func (sub *ScripthashSubscription) GetAddress(scripthash string) (string, error) {
+func (sub *ScripthashSubscription) GetAddress(
+	scripthash string,
+) (string, error) {
 	address, ok := sub.scripthashMap[scripthash]
 	if ok {
 		return address, nil
@@ -143,7 +161,9 @@ func (sub *ScripthashSubscription) GetAddress(scripthash string) (string, error)
 }
 
 // GetScripthash ...
-func (sub *ScripthashSubscription) GetScripthash(address string) (string, error) {
+func (sub *ScripthashSubscription) GetScripthash(
+	address string,
+) (string, error) {
 	var found bool
 	var scripthash string
 
@@ -171,7 +191,9 @@ func (sub *ScripthashSubscription) Remove(scripthash string) error {
 	for i, v := range sub.subscribedSH {
 		if v == scripthash {
 			sub.lock.Lock()
-			sub.subscribedSH = append(sub.subscribedSH[:i], sub.subscribedSH[i+1:]...)
+			sub.subscribedSH = append(
+				sub.subscribedSH[:i],
+				sub.subscribedSH[i+1:]...)
 			sub.lock.Unlock()
 			return nil
 		}
@@ -190,7 +212,9 @@ func (sub *ScripthashSubscription) RemoveAddress(address string) error {
 	for i, v := range sub.subscribedSH {
 		if v == scripthash {
 			sub.lock.Lock()
-			sub.subscribedSH = append(sub.subscribedSH[:i], sub.subscribedSH[i+1:]...)
+			sub.subscribedSH = append(
+				sub.subscribedSH[:i],
+				sub.subscribedSH[i+1:]...)
 			delete(sub.scripthashMap, scripthash)
 			sub.lock.Unlock()
 			return nil
@@ -214,10 +238,18 @@ func (sub *ScripthashSubscription) Resubscribe(ctx context.Context) error {
 
 // SubscribeMasternode subscribes to receive notifications when a masternode status changes.
 // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-headers-subscribe
-func (s *Client) SubscribeMasternode(ctx context.Context, collateral string) (<-chan string, error) {
+func (s *Client) SubscribeMasternode(
+	ctx context.Context,
+	collateral string,
+) (<-chan string, error) {
 	var resp basicResp
 
-	err := s.request(ctx, "blockchain.masternode.subscribe", []interface{}{collateral}, &resp)
+	err := s.request(
+		ctx,
+		"blockchain.masternode.subscribe",
+		[]interface{}{collateral},
+		&resp,
+	)
 	if err != nil {
 		return nil, err
 	}

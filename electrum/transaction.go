@@ -127,7 +127,7 @@ type GetMerkleProofResp struct {
 // GetMerkleProofResult represents the content of the result field in the response to GetMerkleProof().
 type GetMerkleProofResult struct {
 	Merkle   []string `json:"merkle"`
-	Height   uint32   `json:"block_height"`
+	Height   uint64   `json:"block_height"`
 	Position uint32   `json:"pos"`
 }
 
