@@ -71,8 +71,12 @@ type Client struct {
 }
 
 // NewClientTCP initialize a new client for remote server and connects to the remote server using TCP
-func NewClientTCP(ctx context.Context, addr string) (*Client, error) {
-	transport, err := NewTCPTransport(ctx, addr)
+func NewClientTCP(
+	ctx context.Context,
+	addr string,
+	options ...DialerOption,
+) (*Client, error) {
+	transport, err := NewTCPTransport(ctx, addr, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +100,9 @@ func NewClientSSL(
 	ctx context.Context,
 	addr string,
 	config *tls.Config,
+	options ...DialerOption,
 ) (*Client, error) {
-	transport, err := NewSSLTransport(ctx, addr, config)
+	transport, err := NewSSLTransport(ctx, addr, config, options...)
 	if err != nil {
 		return nil, err
 	}

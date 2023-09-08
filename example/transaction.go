@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/triple-a/go-electrum/electrum"
 )
@@ -20,6 +21,7 @@ func main() {
 		&tls.Config{
 			InsecureSkipVerify: true,
 		},
+		electrum.WithTimeout(time.Second*10),
 	)
 	if err != nil {
 		panic(err)
