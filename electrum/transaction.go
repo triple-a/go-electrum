@@ -53,7 +53,10 @@ type GetTransactionResult struct {
 
 type DetailedTransaction struct {
 	*GetTransactionResult
-	Vin []VinWithPrevout `json:"vin"`
+	Vin          []VinWithPrevout `json:"vin"`
+	InputsTotal  float64          `json:"inputs_total"`
+	OutputsTotal float64          `json:"outputs_total"`
+	FeeInSat     float64          `json:"fee_in_sat"`
 }
 
 // Vin represents the input side of a transaction.
@@ -176,6 +179,9 @@ func (s *Client) DetailTransaction(
 	detailedTx := DetailedTransaction{
 		GetTransactionResult: tx,
 		Vin:                  []VinWithPrevout{}, // empty now
+		InputsTotal:          0,
+		OutputsTotal:         0,
+		FeeInSat:             0,
 	}
 	mtx := sync.Mutex{}
 	eg, ctx := errgroup.WithContext(ctx)
@@ -213,6 +219,15 @@ func (s *Client) DetailTransaction(
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
+
+	// calculate inputsTotal, outputsTotal, feeInSat
+	for _, vout := range tx.Vout {
+		detailedTx.OutputsTotal += vout.Value
+	}
+	for _, vin := range detailedTx.Vin {
+		detailedTx.InputsTotal += vin.Prevout.Value
+	}
+	detailedTx.FeeInSat = detailedTx.InputsTotal - detailedTx.OutputsTotal
 
 	s.txCache.Store(tx.TxID, &detailedTx)
 
