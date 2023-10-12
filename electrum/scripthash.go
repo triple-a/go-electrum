@@ -54,11 +54,9 @@ type GetMempoolResult struct {
 
 type DetailedMempoolResult struct {
 	*DetailedTransaction
-	Height        int64   `json:"height"`
-	Fee           uint32  `json:"fee,omitempty"`
-	Incoming      bool    `json:"incoming,omitempty"`
-	TotalSent     float64 `json:"total_sent"`
-	TotalReceived float64 `json:"total_received"`
+	Height   int64  `json:"height"`
+	Fee      uint32 `json:"fee,omitempty"`
+	Incoming bool   `json:"incoming,omitempty"`
 }
 
 // GetHistory returns the confirmed and unconfirmed history for a scripthash.
@@ -136,37 +134,7 @@ func (s *Client) DetailHistory(
 		return nil, err
 	}
 
-	setTotalSentAndReceived(address, result)
-
 	return result, nil
-}
-
-// setTotalSentAndReceived returns the total sent and received for a scripthash.
-func setTotalSentAndReceived(
-	address string,
-	history []*DetailedMempoolResult,
-) {
-	for _, tx := range history {
-		if tx.Incoming {
-			findAddressFunc[Vout](
-				address,
-				tx.Vout,
-				func(elem Vout, index int) bool {
-					tx.TotalReceived += elem.Value
-					return true
-				},
-			)
-		} else {
-			findAddressFunc[VinWithPrevout](
-				address,
-				tx.Vin,
-				func(elem VinWithPrevout, index int) bool {
-					tx.TotalSent += elem.Prevout.Value
-					return true
-				},
-			)
-		}
-	}
 }
 
 // GetMempool returns the unconfirmed transacations of a scripthash.
