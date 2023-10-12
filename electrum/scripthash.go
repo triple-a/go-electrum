@@ -1,6 +1,11 @@
 package electrum
 
-import "context"
+import (
+	"context"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
+)
 
 // GetBalanceResp represents the response to GetBalance().
 type GetBalanceResp struct {
@@ -47,6 +52,13 @@ type GetMempoolResult struct {
 	Fee    uint32 `json:"fee,omitempty"`
 }
 
+type DetailedMempoolResult struct {
+	*DetailedTransaction
+	Height   int64  `json:"height"`
+	Fee      uint32 `json:"fee,omitempty"`
+	Incoming bool   `json:"incoming,omitempty"`
+}
+
 // GetHistory returns the confirmed and unconfirmed history for a scripthash.
 func (s *Client) GetHistory(
 	ctx context.Context,
@@ -65,6 +77,64 @@ func (s *Client) GetHistory(
 	}
 
 	return resp.Result, err
+}
+
+// Details history of a scripthash by adding Prevout and Incoming fields.
+func (s *Client) DetailHistory(
+	ctx context.Context,
+	address string,
+	history []*GetMempoolResult,
+) ([]*DetailedMempoolResult, error) {
+	var result []*DetailedMempoolResult
+
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(10)
+	mtx := sync.Mutex{}
+	for _, h := range history {
+		func(h *GetMempoolResult) {
+			eg.Go(func() error {
+				tx, err := s.GetTransaction(ctx, h.Hash)
+				if err != nil {
+					return err
+				}
+				s.logger.Debugf("detailing tx: %s", tx.TxID)
+				detailedTx, err := s.DetailTransaction(ctx, tx)
+				if err != nil {
+					return err
+				}
+				incoming := false
+				findAddressFunc[Vout](
+					address,
+					detailedTx.Vout,
+					func(elem Vout, index int) bool {
+						incoming = true
+						return false // break
+					},
+				)
+				s.logger.Debugf(
+					"DetailedTx: %s incoming: %v",
+					detailedTx.TxID,
+					incoming,
+				)
+
+				mtx.Lock()
+				defer mtx.Unlock()
+				result = append(result, &DetailedMempoolResult{
+					DetailedTransaction: detailedTx,
+					Height:              h.Height,
+					Fee:                 h.Fee,
+					Incoming:            incoming,
+				})
+				return nil
+			})
+		}(h)
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // GetMempool returns the unconfirmed transacations of a scripthash.

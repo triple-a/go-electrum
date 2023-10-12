@@ -9,6 +9,7 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 const (
@@ -54,6 +55,14 @@ type container struct {
 	err     error
 }
 
+type Logger interface {
+	Printf(format string, v ...interface{})
+	Debugf(format string, v ...interface{})
+	Infof(format string, v ...interface{})
+	Warnf(format string, v ...interface{})
+	Errorf(format string, v ...interface{})
+}
+
 // Client stores information about the remote server.
 type Client struct {
 	transport Transport
@@ -68,25 +77,56 @@ type Client struct {
 	quit  chan struct{}
 
 	nextID uint64
+
+	// txCache
+	txCache sync.Map
+
+	logger Logger
+
+	timeout time.Duration
+}
+
+type ClientOption func(*Client)
+
+func WithTimeout(timeout time.Duration) ClientOption {
+	return func(c *Client) {
+		c.timeout = timeout
+	}
+}
+
+func WithLogger(logger Logger) ClientOption {
+	return func(c *Client) {
+		c.logger = logger
+	}
 }
 
 // NewClientTCP initialize a new client for remote server and connects to the remote server using TCP
 func NewClientTCP(
 	ctx context.Context,
 	addr string,
-	options ...DialerOption,
+	options ...ClientOption,
 ) (*Client, error) {
-	transport, err := NewTCPTransport(ctx, addr, options...)
-	if err != nil {
-		return nil, err
-	}
-
 	c := &Client{
 		handlers:     make(map[uint64]chan *container),
 		pushHandlers: make(map[string][]chan *container),
 
 		Error: make(chan error),
 		quit:  make(chan struct{}),
+
+		logger: newLogger(),
+	}
+
+	for _, option := range options {
+		option(c)
+	}
+
+	dialerOptions := withOptions(map[string]interface{}{
+		"timeout": c.timeout,
+	})
+
+	transport, err := NewTCPTransport(ctx, addr, dialerOptions...)
+	if err != nil {
+		return nil, err
 	}
 
 	c.transport = transport
@@ -100,19 +140,29 @@ func NewClientSSL(
 	ctx context.Context,
 	addr string,
 	config *tls.Config,
-	options ...DialerOption,
+	options ...ClientOption,
 ) (*Client, error) {
-	transport, err := NewSSLTransport(ctx, addr, config, options...)
-	if err != nil {
-		return nil, err
-	}
-
 	c := &Client{
 		handlers:     make(map[uint64]chan *container),
 		pushHandlers: make(map[string][]chan *container),
 
 		Error: make(chan error),
 		quit:  make(chan struct{}),
+
+		logger: newLogger(),
+	}
+
+	for _, option := range options {
+		option(c)
+	}
+
+	dialerOptions := withOptions(map[string]interface{}{
+		"timeout": c.timeout,
+	})
+
+	transport, err := NewSSLTransport(ctx, addr, config, dialerOptions...)
+	if err != nil {
+		return nil, err
 	}
 
 	c.transport = transport

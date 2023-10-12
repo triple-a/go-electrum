@@ -8,7 +8,7 @@ import (
 	"github.com/triple-a/go-electrum/electrum"
 )
 
-func main() {
+func TestServer() {
 	client, err := electrum.NewClientTCP(
 		context.Background(),
 		"bch.imaginary.cash:50001",

@@ -11,7 +11,7 @@ import (
 	"github.com/triple-a/go-electrum/electrum"
 )
 
-func GetTransaction(txid string) {
+func GetDetailedTransaction(txid string) {
 	if txid == "" {
 		txid = "66555dfb0f823623caae5ac27dc1458a78a1cfe36ab85792a05583453446d9e2"
 	}
@@ -20,6 +20,7 @@ func GetTransaction(txid string) {
 	client, err := electrum.NewClientSSL(
 		ctx,
 		"electrum.bitaroo.net:50002",
+		//"ru.poiuty.com:50002",
 		&tls.Config{
 			InsecureSkipVerify: true,
 		},
@@ -36,6 +37,10 @@ func GetTransaction(txid string) {
 		log.Fatalf("GetTransaction err: %v\n", err)
 	}
 
-	x, _ := json.Marshal(tx)
+	dTx, err := client.DetailTransaction(ctx, tx)
+	if err != nil {
+		log.Fatalf("DetailTransaction err: %v\n", err)
+	}
+	x, _ := json.Marshal(dTx)
 	fmt.Printf("%s", x)
 }

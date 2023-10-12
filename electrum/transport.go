@@ -19,10 +19,17 @@ type TCPTransport struct {
 // DialerOption is a function that configures a TCPTransport.
 type DialerOption func(*net.Dialer)
 
-func WithTimeout(timeout time.Duration) DialerOption {
-	return func(d *net.Dialer) {
-		d.Timeout = timeout
+func withOptions(opts map[string]interface{}) []DialerOption {
+	var options []DialerOption
+	for k, v := range opts {
+		switch k {
+		case "timeout":
+			options = append(options, func(d *net.Dialer) {
+				d.Timeout = v.(time.Duration)
+			})
+		}
 	}
+	return options
 }
 
 // NewTCPTransport opens a new TCP connection to the remote server.
