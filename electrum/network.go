@@ -56,7 +56,6 @@ type container struct {
 }
 
 type Logger interface {
-	Printf(format string, v ...interface{})
 	Debugf(format string, v ...interface{})
 	Infof(format string, v ...interface{})
 	Warnf(format string, v ...interface{})
