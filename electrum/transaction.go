@@ -2,7 +2,6 @@ package electrum
 
 import (
 	"context"
-	"log"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -342,7 +341,6 @@ func findAddressFunc[E any](
 	fn func(elem E, index int) bool,
 ) {
 	for i, inout := range inouts {
-		log.Printf("findAddressFunc: %s from %T[%d]", address, inout, i)
 		var vout *Vout
 		if vin, ok := any(inout).(VinWithPrevout); ok {
 			vout = vin.Prevout
