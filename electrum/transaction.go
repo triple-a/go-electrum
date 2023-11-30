@@ -197,7 +197,7 @@ func (s *Client) DetailTransaction(
 				return err
 			}
 			s.logger.Debugf(
-				"from tx %s vin.tx %s prevou address & value: %v %f",
+				"from tx %s vin.tx %s prevout address & value: %v %f",
 				tx.TxID,
 				vin.TxID,
 				getAddressFromVout(*prevout),
