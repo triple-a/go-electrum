@@ -105,7 +105,7 @@ func (s *Client) GetTransaction(
 
 	if tx, ok := s.txCache.Load(txHash); ok {
 		if result, ok := tx.(*GetTransactionResult); ok {
-			s.logger.Infof("Tx %s found in cache", txHash)
+			s.logger.Debugf("Tx %s found in cache", txHash)
 			return result, nil
 		} else if detailedTx, ok := tx.(*DetailedTransaction); ok {
 			return detailedTx.GetTransactionResult, nil
@@ -171,7 +171,7 @@ func (s *Client) DetailTransaction(
 ) (*DetailedTransaction, error) {
 	if _tx, ok := s.txCache.Load(tx.TxID); ok {
 		if detailedTx, ok := _tx.(*DetailedTransaction); ok {
-			s.logger.Infof("DetailedTx %s found in cache", tx.TxID)
+			s.logger.Debugf("DetailedTx %s found in cache", tx.TxID)
 			return detailedTx, nil
 		}
 	}
