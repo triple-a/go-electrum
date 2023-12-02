@@ -102,14 +102,11 @@ func (s *Client) GetTransaction(
 	txHash string,
 ) (*GetTransactionResult, error) {
 	var resp GetTransactionResp
+	var tx GetTransactionResult
 
-	if tx, ok := s.txCache.Load(txHash); ok {
-		if result, ok := tx.(*GetTransactionResult); ok {
-			s.logger.Debugf("Tx %s found in cache", txHash)
-			return result, nil
-		} else if detailedTx, ok := tx.(*DetailedTransaction); ok {
-			return detailedTx.GetTransactionResult, nil
-		}
+	if ok := s.txCache.Load(txHash, &tx); ok {
+		s.logger.Debugf("Tx %s found in cache", txHash)
+		return &tx, nil
 	}
 
 	err := s.request(
@@ -123,7 +120,10 @@ func (s *Client) GetTransaction(
 	}
 
 	if resp.Result != nil && resp.Result.Confirmations > 6 {
-		s.txCache.Store(txHash, resp.Result)
+		err := s.txCache.Store(txHash, *resp.Result)
+		if err != nil {
+			s.logger.Errorf("Store tx %s in cache failed: %v", txHash, err)
+		}
 	}
 
 	return resp.Result, nil
@@ -169,12 +169,6 @@ func (s *Client) DetailTransaction(
 	ctx context.Context,
 	tx *GetTransactionResult,
 ) (*DetailedTransaction, error) {
-	if _tx, ok := s.txCache.Load(tx.TxID); ok {
-		if detailedTx, ok := _tx.(*DetailedTransaction); ok {
-			s.logger.Debugf("DetailedTx %s found in cache", tx.TxID)
-			return detailedTx, nil
-		}
-	}
 	detailedTx := DetailedTransaction{
 		GetTransactionResult: tx,
 		Vin:                  []VinWithPrevout{}, // empty now
@@ -182,6 +176,12 @@ func (s *Client) DetailTransaction(
 		OutputsTotal:         0,
 		FeeInSat:             0,
 	}
+
+	if ok := s.txCache.Load(tx.TxID, &detailedTx); ok {
+		s.logger.Debugf("DetailedTx %s found in cache", tx.TxID)
+		return &detailedTx, nil
+	}
+
 	mtx := sync.Mutex{}
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(20)
@@ -228,7 +228,10 @@ func (s *Client) DetailTransaction(
 	}
 	detailedTx.FeeInSat = detailedTx.InputsTotal - detailedTx.OutputsTotal
 
-	s.txCache.Store(tx.TxID, &detailedTx)
+	err := s.txCache.Store(tx.TxID, detailedTx)
+	if err != nil {
+		s.logger.Errorf("Store detailedTx %s in cache failed: %v", tx.TxID, err)
+	}
 
 	return &detailedTx, nil
 }

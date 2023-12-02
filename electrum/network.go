@@ -78,7 +78,7 @@ type Client struct {
 	nextID uint64
 
 	// txCache
-	txCache sync.Map
+	txCache *TxCache
 
 	logger Logger
 
@@ -105,6 +105,11 @@ func NewClientTCP(
 	addr string,
 	options ...ClientOption,
 ) (*Client, error) {
+	txCache, err := NewTxCache(nil)
+	if err != nil {
+		return nil, err
+	}
+
 	c := &Client{
 		handlers:     make(map[uint64]chan *container),
 		pushHandlers: make(map[string][]chan *container),
@@ -113,6 +118,8 @@ func NewClientTCP(
 		quit:  make(chan struct{}),
 
 		logger: newLogger(),
+
+		txCache: txCache,
 	}
 
 	for _, option := range options {
@@ -141,6 +148,11 @@ func NewClientSSL(
 	config *tls.Config,
 	options ...ClientOption,
 ) (*Client, error) {
+	txCache, err := NewTxCache(nil)
+	if err != nil {
+		return nil, err
+	}
+
 	c := &Client{
 		handlers:     make(map[uint64]chan *container),
 		pushHandlers: make(map[string][]chan *container),
@@ -148,7 +160,8 @@ func NewClientSSL(
 		Error: make(chan error),
 		quit:  make(chan struct{}),
 
-		logger: newLogger(),
+		logger:  newLogger(),
+		txCache: txCache,
 	}
 
 	for _, option := range options {
@@ -332,6 +345,9 @@ func (s *Client) Shutdown() {
 	s.transport = nil
 	s.handlers = nil
 	s.pushHandlers = nil
+	if (s.txCache) != nil {
+		s.txCache.Close()
+	}
 }
 
 func (s *Client) IsShutdown() bool {

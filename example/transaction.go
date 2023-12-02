@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -36,6 +35,5 @@ func GetTransaction(txid string) {
 		log.Fatalf("GetTransaction err: %v\n", err)
 	}
 
-	x, _ := json.Marshal(tx)
-	fmt.Printf("%s", x)
+	fmt.Printf("tx: %v\n", tx)
 }
