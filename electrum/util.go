@@ -88,12 +88,14 @@ func (c *TxCache) Store(txID string, tx any) error {
 
 func (c *TxCache) Load(txID string, tx any) (ok bool) {
 	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	row, err := c.db.Query(
 		"SELECT tx, is_detailed FROM tx_cache WHERE txid = ?",
 		txID,
 	)
+
+	c.mu.Unlock()
+
 	if err != nil {
 		return false
 	}
