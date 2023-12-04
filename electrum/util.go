@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -17,6 +18,7 @@ func mustMarshalJSON(v interface{}) string {
 }
 
 type TxCache struct {
+	mu sync.Mutex
 	db *sql.DB
 }
 
@@ -39,7 +41,7 @@ func NewTxCache(db *sql.DB) (*TxCache, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TxCache{db}, nil
+	return &TxCache{db: db}, nil
 }
 
 func (c *TxCache) Close() error {
@@ -63,6 +65,9 @@ func (c *TxCache) Store(txID string, tx any) error {
 		isDetailed = 1
 	}
 
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	_, err = c.db.Exec(
 		`INSERT INTO tx_cache (txid, tx, is_detailed) VALUES (?, ?, ?)
 		ON CONFLICT(txid) WHERE is_detailed = 0 DO UPDATE SET
@@ -82,6 +87,9 @@ func (c *TxCache) Store(txID string, tx any) error {
 }
 
 func (c *TxCache) Load(txID string, tx any) (ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	row, err := c.db.Query(
 		"SELECT tx, is_detailed FROM tx_cache WHERE txid = ?",
 		txID,
