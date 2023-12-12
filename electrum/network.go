@@ -177,9 +177,7 @@ func NewClientSSL(
 		return nil, err
 	}
 
-	// c.transportLock.Lock()
 	c.transport = transport
-	// c.transportLock.Unlock()
 	go c.listen()
 
 	return c, nil
@@ -213,6 +211,7 @@ func (s *Client) listen() {
 			return
 		case err := <-s.transport.Errors():
 			s.Error <- err
+			s.transport = nil
 			s.Shutdown()
 		case bytes := <-s.transport.Responses():
 			result := &container{
@@ -341,16 +340,15 @@ func (s *Client) Shutdown() {
 	if !s.IsShutdown() {
 		close(s.quit)
 	}
-
 	if s.transport != nil {
 		_ = s.transport.Close()
 	}
-	s.transport = nil
-	s.handlers = nil
-	s.pushHandlers = nil
 	if (s.txCache) != nil {
 		s.txCache.Close()
 	}
+	// s.transport = nil
+	s.handlers = nil
+	s.pushHandlers = nil
 }
 
 func (s *Client) IsShutdown() bool {

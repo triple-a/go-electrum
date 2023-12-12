@@ -14,7 +14,6 @@ type TCPTransport struct {
 	conn      net.Conn
 	responses chan []byte
 	errors    chan error
-	isClosed  bool
 }
 
 // DialerOption is a function that configures a TCPTransport.
@@ -101,9 +100,6 @@ func (t *TCPTransport) listen() {
 			t.errors <- err
 			break
 		}
-		if t.isClosed {
-			break
-		}
 		if DebugMode {
 			log.Printf(
 				"%s [debug] %s -> %s",
@@ -143,6 +139,5 @@ func (t *TCPTransport) Errors() <-chan error {
 }
 
 func (t *TCPTransport) Close() error {
-	t.isClosed = true
 	return t.conn.Close()
 }
