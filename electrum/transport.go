@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,8 @@ type TCPTransport struct {
 	responses chan []byte
 	errors    chan error
 	isClosed  bool
+
+	mu sync.Mutex
 }
 
 // DialerOption is a function that configures a TCPTransport.
@@ -95,7 +98,12 @@ func (t *TCPTransport) listen() {
 	defer t.conn.Close()
 	reader := bufio.NewReader(t.conn)
 
-	for !t.isClosed {
+	for {
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		if t.isClosed {
+			break
+		}
 		line, err := reader.ReadBytes(nl)
 		if err != nil {
 			t.errors <- err
@@ -140,6 +148,8 @@ func (t *TCPTransport) Errors() <-chan error {
 }
 
 func (t *TCPTransport) Close() error {
+	t.mu.Lock()
 	t.isClosed = true
+	t.mu.Unlock()
 	return t.conn.Close()
 }
