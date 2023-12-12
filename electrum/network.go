@@ -178,7 +178,9 @@ func NewClientSSL(
 		return nil, err
 	}
 
+	c.transportLock.Lock()
 	c.transport = transport
+	c.transportLock.Unlock()
 	go c.listen()
 
 	return c, nil
@@ -204,9 +206,11 @@ func (s *Client) listen() {
 		if s.IsShutdown() {
 			break
 		}
+		s.transportLock.Lock()
 		if s.transport == nil {
 			break
 		}
+		s.transportLock.Unlock()
 		select {
 		case <-s.quit:
 			return
