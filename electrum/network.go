@@ -64,7 +64,8 @@ type Logger interface {
 
 // Client stores information about the remote server.
 type Client struct {
-	transport Transport
+	transport     Transport
+	transportLock sync.RWMutex
 
 	handlers     map[uint64]chan *container
 	handlersLock sync.RWMutex
@@ -177,9 +178,9 @@ func NewClientSSL(
 		return nil, err
 	}
 
-	// c.transportLock.Lock()
+	c.transportLock.Lock()
 	c.transport = transport
-	// c.transportLock.Unlock()
+	c.transportLock.Unlock()
 	go c.listen()
 
 	return c, nil
@@ -205,6 +206,7 @@ func (s *Client) listen() {
 		if s.IsShutdown() {
 			break
 		}
+		s.transportLock.RLock()
 		if s.transport == nil {
 			break
 		}
@@ -255,6 +257,7 @@ func (s *Client) listen() {
 				c <- result
 			}
 		}
+		s.transportLock.RUnlock()
 	}
 }
 
@@ -345,7 +348,9 @@ func (s *Client) Shutdown() {
 	if s.transport != nil {
 		_ = s.transport.Close()
 	}
+	s.transportLock.Lock()
 	s.transport = nil
+	s.transportLock.Unlock()
 	s.handlers = nil
 	s.pushHandlers = nil
 	if (s.txCache) != nil {
