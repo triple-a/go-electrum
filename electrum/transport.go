@@ -95,13 +95,10 @@ func (t *TCPTransport) listen() {
 	defer t.conn.Close()
 	reader := bufio.NewReader(t.conn)
 
-	for {
+	for !t.isClosed {
 		line, err := reader.ReadBytes(nl)
 		if err != nil {
 			t.errors <- err
-			break
-		}
-		if t.isClosed {
 			break
 		}
 		if DebugMode {
