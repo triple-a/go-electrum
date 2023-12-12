@@ -210,7 +210,6 @@ func (s *Client) listen() {
 		if s.transport == nil {
 			break
 		}
-		s.transportLock.Unlock()
 		select {
 		case <-s.quit:
 			return
@@ -258,6 +257,7 @@ func (s *Client) listen() {
 				c <- result
 			}
 		}
+		s.transportLock.Unlock()
 	}
 }
 
