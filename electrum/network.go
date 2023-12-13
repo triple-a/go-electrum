@@ -212,6 +212,8 @@ func (s *Client) listen() {
 		case err := <-s.transport.Errors():
 			s.Error <- err
 			s.transport = nil
+			s.handlers = nil
+			s.pushHandlers = nil
 			s.Shutdown()
 		case bytes := <-s.transport.Responses():
 			result := &container{
@@ -347,8 +349,8 @@ func (s *Client) Shutdown() {
 		s.txCache.Close()
 	}
 	// s.transport = nil
-	s.handlers = nil
-	s.pushHandlers = nil
+	// s.handlers = nil
+	// s.pushHandlers = nil
 }
 
 func (s *Client) IsShutdown() bool {
